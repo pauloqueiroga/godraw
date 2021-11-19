@@ -1,3 +1,6 @@
+# Local-only directories for anything you don't want in the repository
+local-only/
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
