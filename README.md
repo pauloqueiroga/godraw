@@ -1,4 +1,5 @@
 # Go Draw - Golang MX
+
 ![Gopher mascot](godraw.svg)
 
 This package provides types and helper functions to do some basic but useful things with [mxGraph](https://github.com/jgraph/mxgraph) diagrams in XML, which is most famously used by [app.diagrams.net](https://app.diagrams.net), the new name of [draw.io](https://draw.io).

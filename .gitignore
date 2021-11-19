@@ -1,6 +1,9 @@
 # Local-only directories for anything you don't want in the repository
 local-only/
 
+# VisualStudio Code directory
+.vscode/
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
