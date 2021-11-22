@@ -1,4 +1,4 @@
-# Go Draw - Golang MX
+# Go Draw - Golang mxGraph (draw.io) types
 
 ![Gopher mascot](godraw.svg)
 
