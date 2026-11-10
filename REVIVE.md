@@ -26,8 +26,8 @@ This plan describes my intentions to revive this library after so many years of 
 ## The Plan
 
 ### Phase 1: Repository hygiene (no behavior change)
-1. Add `.gitattributes` with `* text=auto eol=lf` and renormalize, so `gofmt` is clean.
-1. Raise the `go` line in `go.mod` to a supported release. Go supports only the two latest releases; I'd set it to the older of those two.
+1. (done) Add `.gitattributes` with `* text=auto eol=lf` and renormalize, so `gofmt` is clean.
+1. (done) Raise the `go` line in `go.mod` to a supported release. Go supports only the two latest releases; I'd set it to the older of those two.
 1. Decide on the license. I recommend MIT, BSD-3-Clause or Apache-2.0. You are the sole author, so you can relicense freely. Fix the "All rights reserved" header either way.
 
 ### Phase 2: Fix the bugs, tests first

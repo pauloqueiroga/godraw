@@ -1,5 +1,5 @@
-// Copyright 2021 Paulo Queiroga. All rights reserved.
-// Use of this source code is governed by the license that can
+// Copyright 2021 Paulo Queiroga.
+// Use of this source code is governed by the MIT license that can
 // be found in the LICENSE file.
 
 // Package godraw implements basic types and helper functions to
