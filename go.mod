@@ -1,3 +1,3 @@
 module github.com/pauloqueiroga/godraw
 
-go 1.17
+go 1.27
