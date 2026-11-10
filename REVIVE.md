@@ -25,10 +25,10 @@ This plan describes my intentions to revive this library after so many years of 
 
 ## The Plan
 
-### Phase 1: Repository hygiene (no behaviour change)
-1. Add `.gitattributes` with `* text=auto eol=lf` and renormalise, so `gofmt` is clean.
+### Phase 1: Repository hygiene (no behavior change)
+1. Add `.gitattributes` with `* text=auto eol=lf` and renormalize, so `gofmt` is clean.
 1. Raise the `go` line in `go.mod` to a supported release. Go supports only the two latest releases; I'd set it to the older of those two.
-1. Decide on the licence. I recommend MIT, BSD-3-Clause or Apache-2.0. You are the sole author, so you can relicense freely. Fix the "All rights reserved" header either way.
+1. Decide on the license. I recommend MIT, BSD-3-Clause or Apache-2.0. You are the sole author, so you can relicense freely. Fix the "All rights reserved" header either way.
 
 ### Phase 2: Fix the bugs, tests first
 1. Write table-driven tests that assert the actual XML output and round-trip equality. They should fail on bugs 1 to 6.
@@ -70,7 +70,7 @@ Breaking changes are acceptable before v1, but batch them into one release.
 1. Optionally add the OpenSSF Scorecard action, which audits most of the above and gives you a badge.
 
 ### Phase 5: Distribution and documentation
-1. A Go library needs no build artefacts. Distribution is a git tag: push `vX.Y.Z` and the module proxy and pkg.go.dev pick it up. Create a GitHub Release for each tag with notes.
+1. A Go library needs no build artifacts. Distribution is a git tag: push `vX.Y.Z` and the module proxy and pkg.go.dev pick it up. Create a GitHub Release for each tag with notes.
 1. Expand the README: install command, a short usage example, pkg.go.dev and Go Report Card badges, and the supported Go versions.
 1. Add `CHANGELOG.md` and `SECURITY.md`. A `CONTRIBUTING.md` is optional.
 1. Go to **v1.0.0** only once the Phase 3 API has settled. After v1, a breaking change requires a `/v2` module path, so there is no need to hurry.
