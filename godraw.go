@@ -8,6 +8,8 @@ package godraw
 
 import (
 	"encoding/xml"
+	"maps"
+	"slices"
 	"strings"
 )
 
@@ -65,39 +67,40 @@ type Style struct {
 	Attributes map[string]string
 }
 
-// MarshalXMLAttr returns an XML attribute with the encoded value
-// of Style. It implements xml.MarshalerAttr interface.
+// MarshalXMLAttr encodes the style as "key=value;" pairs, writing
+// the keys in sorted order so the output is the same on every run.
+// Empty style results in no style attribute. It implements
+// xml.MarshalerAttr interface.
 func (a Style) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
-	var text string
-
-	for k, v := range a.Attributes {
-		text += k
-
-		if v != "" {
-			text += "="
-			text += v
-		}
-
-		text += ";"
+	if len(a.Attributes) == 0 {
+		// xml nodes without attributes returns empty xml.Attr
+		return xml.Attr{}, nil
 	}
 
-	return xml.Attr{Name: xml.Name{Local: "style"}, Value: text}, nil
+	var b strings.Builder
+	for _, k := range slices.Sorted(maps.Keys(a.Attributes)) {
+		b.WriteString(k)
+		if v := a.Attributes[k]; v != "" {
+			b.WriteByte('=')
+			b.WriteString(v)
+		}
+		b.WriteByte(';')
+	}
+
+	return xml.Attr{Name: name, Value: b.String()}, nil
 }
 
-// UnmarshalXMLAttr decodes a single XML attribute of type Style.
-// It implements xml.UnmarshalerAttr interface.
+// UnmarshalXMLAttr decodes a style made of "key=value" pairs
+// separated by ";". It implements xml.UnmarshalerAttr interface.
 func (a *Style) UnmarshalXMLAttr(attr xml.Attr) error {
 	a.Attributes = make(map[string]string)
-	pairs := strings.Split(attr.Value, ";")
-
-	for _, pair := range pairs {
-		kv := strings.Split(pair, "=")
-		if len(kv) < 2 {
-			kv = append(kv, "")
+	for pair := range strings.SplitSeq(attr.Value, ";") {
+		if pair == "" {
+			continue
 		}
-		a.Attributes[kv[0]] = kv[1]
+		k, v, _ := strings.Cut(pair, "=")
+		a.Attributes[k] = v
 	}
-
 	return nil
 }
 

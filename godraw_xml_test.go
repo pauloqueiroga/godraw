@@ -343,26 +343,55 @@ func TestUnmarshalStyle(t *testing.T) {
 	}
 }
 
-// TestStyleValueCannotInjectKeys checks that an image URL containing ";"
-// cannot add keys to the style. The encoder may reject such a value or
-// escape it. If it encodes the value, decoding the result must give back
-// exactly the keys that NewImage set.
+// TestStyleValueCannotInjectKeys checks that a style value containing ";"
+// cannot add keys to the style or change another key's value. The encoder
+// may reject such a value or escape it. If it encodes the value, decoding
+// the result must give back exactly the original keys, and every key whose
+// value has no ";" must keep its value. The value that holds the ";" is not
+// compared, because an escaping encoder may legitimately change it.
 func TestStyleValueCannotInjectKeys(t *testing.T) {
 	tests := []struct {
 		name string
-		url  string
+		cell *godraw.Cell
 	}{
-		{name: "key with a value", url: gopherURL + ";rounded=1"},
-		{name: "key without a value", url: gopherURL + ";html"},
-		{name: "overrides an existing key", url: gopherURL + ";shape=ellipse"},
-		{name: "trailing semicolon", url: gopherURL + ";"},
-		{name: "semicolon only", url: ";"},
+		{
+			name: "key with a value",
+			cell: godraw.NewImage("img", layer, gopherURL+";rounded=1"),
+		},
+		{
+			name: "key without a value",
+			cell: godraw.NewImage("img", layer, gopherURL+";html"),
+		},
+		{
+			// The injected "shape" is written right after "image". The real
+			// "shape" sorts after "image", so it comes later and wins on
+			// decode. This case alone cannot detect an override.
+			name: "overrides a key that sorts later",
+			cell: godraw.NewImage("img", layer, gopherURL+";shape=ellipse"),
+		},
+		{
+			// The injected "fillColor" is written right after "strokeColor".
+			// The real "fillColor" sorts before "strokeColor", so the
+			// injected value comes later and wins on decode.
+			name: "overrides a key that sorts earlier",
+			cell: &godraw.Cell{ID: "a", Style: godraw.Style{Attributes: map[string]string{
+				"fillColor":   "#dae8fc",
+				"strokeColor": "#6c8ebf;fillColor=#ff0000",
+			}}},
+		},
+		{
+			name: "trailing semicolon",
+			cell: godraw.NewImage("img", layer, gopherURL+";"),
+		},
+		{
+			name: "semicolon only",
+			cell: godraw.NewImage("img", layer, ";"),
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			img := godraw.NewImage("img", layer, tt.url)
-			blob, err := xml.Marshal(img)
+			blob, err := xml.Marshal(tt.cell)
 			if err != nil {
 				t.Logf("xml.Marshal rejected the value: %v", err)
 				return
@@ -373,13 +402,19 @@ func TestStyleValueCannotInjectKeys(t *testing.T) {
 				t.Fatalf("xml.Unmarshal: %v\ninput: %s", err, blob)
 			}
 
+			want := tt.cell.Style.Attributes
 			gotKeys := slices.Sorted(maps.Keys(got.Style.Attributes))
-			wantKeys := slices.Sorted(maps.Keys(img.Style.Attributes))
+			wantKeys := slices.Sorted(maps.Keys(want))
 			if !slices.Equal(gotKeys, wantKeys) {
 				t.Errorf("style keys after round trip = %q, want %q\nXML: %s", gotKeys, wantKeys, blob)
 			}
-			if shape := got.Style.Attributes["shape"]; shape != "image" {
-				t.Errorf("shape after round trip = %q, want %q\nXML: %s", shape, "image", blob)
+			for _, k := range wantKeys {
+				if strings.Contains(want[k], ";") {
+					continue
+				}
+				if v := got.Style.Attributes[k]; v != want[k] {
+					t.Errorf("%s after round trip = %q, want %q\nXML: %s", k, v, want[k], blob)
+				}
 			}
 		})
 	}

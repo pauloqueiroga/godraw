@@ -33,7 +33,7 @@ This plan describes my intentions to revive this library after so many years of 
 ### Phase 2: Fix the bugs, tests first
 1. (done) Write table-driven tests that assert the actual XML output and round-trip equality. They should fail on bugs 1 to 6.
 1. (done) Fix the `NewImageXY` X/Y assignment.
-1. Rewrite the style codec:
+1. (done) Rewrite the style codec:
    - split with `strings.Cut` on the first `=` only;
    - skip empty segments;
    - write keys in sorted order with `strings.Builder`;
