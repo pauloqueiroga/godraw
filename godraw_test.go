@@ -22,13 +22,13 @@ func TestExampleEncodeAndDecodeXml(t *testing.T) {
 	// XML-Marshalling into blob
 	blob, err := xml.Marshal(g)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("xml.Marshal: %v", err)
 	}
 
 	// Un-marshaling the XML into object
 	var result GraphModel
 	if err := xml.Unmarshal(blob, &result); err != nil {
-		t.Fatal(err)
+		t.Fatalf("xml.Unmarshal: %v", err)
 	}
 
 	// Verifying if some basics match between the original object and the un-marshalled one
