@@ -156,7 +156,7 @@ func NewImage(id, layerId, url string) *Cell {
 func NewImageXY(id, layerId, url string, x int, y int) *Cell {
 	i := NewImage(id, layerId, url)
 	i.Geometry.X = x
-	i.Geometry.X = y
+	i.Geometry.Y = y
 	return i
 }
 

@@ -31,8 +31,8 @@ This plan describes my intentions to revive this library after so many years of 
 1. (done) Decide on the license. I recommend MIT, BSD-3-Clause or Apache-2.0. You are the sole author, so you can relicense freely. Fix the "All rights reserved" header either way.
 
 ### Phase 2: Fix the bugs, tests first
-1. Write table-driven tests that assert the actual XML output and round-trip equality. They should fail on bugs 1 to 6.
-1. Fix the `NewImageXY` X/Y assignment.
+1. (done) Write table-driven tests that assert the actual XML output and round-trip equality. They should fail on bugs 1 to 6.
+1. (done) Fix the `NewImageXY` X/Y assignment.
 1. Rewrite the style codec:
    - split with `strings.Cut` on the first `=` only;
    - skip empty segments;
