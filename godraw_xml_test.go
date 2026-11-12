@@ -170,6 +170,52 @@ func TestRoundTripGraph(t *testing.T) {
 	}
 }
 
+// TestNewImageXYGeometry checks the coordinates NewImageXY sets. It marshals
+// only the geometry, so problems with the style attribute cannot mask the
+// result.
+func TestNewImageXYGeometry(t *testing.T) {
+	tests := []struct {
+		name string
+		x, y int
+		want string
+	}{
+		{
+			name: "x and y differ",
+			x:    470,
+			y:    20,
+			want: `<mxGeometry x="470" y="20" as="geometry"></mxGeometry>`,
+		},
+		{
+			name: "x and y equal",
+			x:    300,
+			y:    300,
+			want: `<mxGeometry x="300" y="300" as="geometry"></mxGeometry>`,
+		},
+		{
+			name: "x is zero",
+			x:    0,
+			y:    20,
+			want: `<mxGeometry y="20" as="geometry"></mxGeometry>`,
+		},
+		{
+			name: "y is zero",
+			x:    470,
+			y:    0,
+			want: `<mxGeometry x="470" as="geometry"></mxGeometry>`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			img := godraw.NewImageXY("img", layer, gopherURL, tt.x, tt.y)
+			if img.Geometry == nil {
+				t.Fatal("NewImageXY returned a cell without a geometry")
+			}
+			marshalAndCheck(t, img.Geometry, tt.want)
+		})
+	}
+}
+
 func TestMarshalStyle(t *testing.T) {
 	tests := []struct {
 		name  string
