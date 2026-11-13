@@ -2,6 +2,7 @@ package godraw_test
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"maps"
 	"reflect"
@@ -281,6 +282,31 @@ func TestMarshalStyle(t *testing.T) {
 	}
 }
 
+func TestMarshalStyleRejectsInvalid(t *testing.T) {
+	tests := []struct {
+		name  string
+		attrs map[string]string
+	}{
+		{name: "value containing a semicolon", attrs: map[string]string{"image": gopherURL + ";rounded=1"}},
+		{name: "value that is only a semicolon", attrs: map[string]string{"image": ";"}},
+		{name: "key containing a semicolon", attrs: map[string]string{"html;rounded": "1"}},
+		{name: "key containing an equals sign", attrs: map[string]string{"fill=Color": "red"}},
+		{name: "empty key", attrs: map[string]string{"": "1"}},
+		{name: "empty key without a value", attrs: map[string]string{"": ""}},
+		{name: "one bad pair among good ones", attrs: map[string]string{"html": "1", "image": "a;b", "shape": "image"}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cell := godraw.Cell{ID: "a", Style: godraw.Style{Attributes: tt.attrs}}
+			blob, err := xml.Marshal(cell)
+			if !errors.Is(err, godraw.ErrInvalidStyle) {
+				t.Errorf("xml.Marshal = %s, %v; want an error wrapping ErrInvalidStyle", blob, err)
+			}
+		})
+	}
+}
+
 func TestUnmarshalStyle(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -326,6 +352,16 @@ func TestUnmarshalStyle(t *testing.T) {
 			name:  "XML-escaped value",
 			input: `<mxCell id="a" style="image=https://example.com/a.svg?a=1&amp;b=2;"/>`,
 			want:  map[string]string{"image": "https://example.com/a.svg?a=1&b=2"},
+		},
+		{
+			name:  "pairs without a key",
+			input: `<mxCell id="a" style="=1;rounded=1;=;"/>`,
+			want:  map[string]string{"rounded": "1"},
+		},
+		{
+			name:  "repeated key keeps the last value",
+			input: `<mxCell id="a" style="shape=image;shape=ellipse;"/>`,
+			want:  map[string]string{"shape": "ellipse"},
 		},
 	}
 

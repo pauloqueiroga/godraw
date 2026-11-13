@@ -8,6 +8,8 @@ package godraw
 
 import (
 	"encoding/xml"
+	"errors"
+	"fmt"
 	"maps"
 	"slices"
 	"strings"
@@ -63,9 +65,20 @@ type Geometry struct {
 
 // A Style is a map of key-value pairs to describe the style
 // properties of each cell.
+//
+// Keys must be non-empty and must not contain ";" or "=". Values
+// must not contain ";". draw.io has no way to escape ";" in a style,
+// so a value such as a URL must percent-encode it as "%3B".
+// Marshalling a style that breaks these rules fails with an error
+// that wraps ErrInvalidStyle.
 type Style struct {
 	Attributes map[string]string
 }
+
+// ErrInvalidStyle is wrapped by the error returned when a Style
+// cannot be encoded, because a key or value would change the meaning
+// of the encoded style.
+var ErrInvalidStyle = errors.New("godraw: invalid style")
 
 // MarshalXMLAttr encodes the style as "key=value;" pairs, writing
 // the keys in sorted order so the output is the same on every run.
@@ -73,14 +86,24 @@ type Style struct {
 // xml.MarshalerAttr interface.
 func (a Style) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
 	if len(a.Attributes) == 0 {
-		// xml nodes without attributes returns empty xml.Attr
+		// encoding/xml leaves out an attribute whose Name is empty.
 		return xml.Attr{}, nil
 	}
 
 	var b strings.Builder
 	for _, k := range slices.Sorted(maps.Keys(a.Attributes)) {
+		v := a.Attributes[k]
+		switch {
+		case k == "":
+			return xml.Attr{}, fmt.Errorf("%w: empty key", ErrInvalidStyle)
+		case strings.ContainsAny(k, ";="):
+			return xml.Attr{}, fmt.Errorf("%w: key %q contains ';' or '='", ErrInvalidStyle, k)
+		case strings.Contains(v, ";"):
+			return xml.Attr{}, fmt.Errorf("%w: value of key %q contains ';'", ErrInvalidStyle, k)
+		}
+
 		b.WriteString(k)
-		if v := a.Attributes[k]; v != "" {
+		if v != "" {
 			b.WriteByte('=')
 			b.WriteString(v)
 		}
@@ -91,14 +114,16 @@ func (a Style) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
 }
 
 // UnmarshalXMLAttr decodes a style made of "key=value" pairs
-// separated by ";". It implements xml.UnmarshalerAttr interface.
+// separated by ";". Pairs with an empty key are skipped, so every
+// decoded style can be encoded again. It implements
+// xml.UnmarshalerAttr interface.
 func (a *Style) UnmarshalXMLAttr(attr xml.Attr) error {
 	a.Attributes = make(map[string]string)
 	for pair := range strings.SplitSeq(attr.Value, ";") {
-		if pair == "" {
+		k, v, _ := strings.Cut(pair, "=")
+		if k == "" {
 			continue
 		}
-		k, v, _ := strings.Cut(pair, "=")
 		a.Attributes[k] = v
 	}
 	return nil
@@ -141,6 +166,9 @@ func NewShape(id, layerId string) *Cell {
 // with given unique ID (id), parent ID (layerId) and image
 // source URL (url). The new cell contains a default geometry
 // which you might want to change.
+//
+// The URL goes into the cell's Style, so it must not contain ";".
+// Percent-encode it as "%3B", or marshalling the cell will fail.
 func NewImage(id, layerId, url string) *Cell {
 	i := NewShape(id, layerId)
 	i.Style = Style{

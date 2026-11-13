@@ -38,8 +38,8 @@ This plan describes my intentions to revive this library after so many years of 
    - skip empty segments;
    - write keys in sorted order with `strings.Builder`;
    - return an empty attribute name for an empty style, so the attribute is omitted.
-1. Reject or escape `;` in style values, which closes the injection hole.
-1. Add a fuzz test for the style round trip (`func FuzzStyle`, built into Go since 1.18). It would have caught bugs 2 and 3.
+1. (done) Reject or escape `;` in style values, which closes the injection hole.
+1. (done) Add a fuzz test for the style round trip (`func FuzzStyle`, built into Go since 1.18). It would have caught bugs 2 and 3.
 1. Add a runnable `Example` function with an `// Output:` block. It appears as documentation on pkg.go.dev and is verified by `go test`. Move the tests to package `godraw_test` so they exercise only the public API.
 1. Release this as **v0.1.3**: fixes only, no API break.
 
